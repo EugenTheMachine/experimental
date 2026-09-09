@@ -76,7 +76,7 @@ parser.add_argument('-rng_seed', '--rng_seed', default=None, type=int, help = "O
 parser.add_argument('-use_deterministic', '--use_deterministic', default=False, type=lambda x: (str(x).lower() == 'true'), help = "Whether to use deterministic algorithms (default=False)")
 parser.add_argument('-tile', '--tile_size', default=256, type=int, help = "Tile sizes for the input images")
 
-def main(model, loss_fn, train_loader, test_loader, num_epochs=1000, epoch_name='output_epoch', max_no_improvement=10):
+def main(model, loss_fn, train_loader, test_loader, num_epochs=1000, epoch_name='output_epoch', max_no_improvement=100):
     from instanseg.utils.AI_utils import optimize_hyperparameters, train_epoch, test_epoch
     global best_f1_score, device, method, iou_threshold, args, optimizer, scheduler
 
