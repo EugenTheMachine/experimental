@@ -4,6 +4,8 @@
 </p>
 
 
+**EXPERIMENTS** - to ensure everything is working, use the overfitting dataset and run it for 350 epochs with lr = 0.01 and img_size of 512. This should be just fine to see how F1 score changes slightly. Closer to the end it is expected to reach >0, preferable >0.1, possibly even up to 0.5, although it can oscillate here and there, and it is probably a good idea to decrease the lr value as time goes by. Or maybe it all just is not true for real data.
+
 
 ## Overview
 
@@ -49,7 +51,6 @@ If you use InstanSeg for nucleus and/or cell segmentation in fluorescence images
 - [How to cite InstanSeg:](#how-to-cite-instanseg)
 - [Table of Contents](#table-of-contents)
 - [Installing using pip](#installing-using-pip)
-  - [Local Installation](#local-installation)
   - [GPU Version (CUDA) for Windows and Linux](#gpu-version-cuda-for-windows-and-linux)
   - [Setup Repository](#setup-repository)
 - [Usage](#usage)
