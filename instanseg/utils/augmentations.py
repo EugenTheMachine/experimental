@@ -3,7 +3,7 @@ from albumentations.pytorch import ToTensorV2
 
 def get_augmentation_pipeline(image_size: tuple, subset: str):
     if subset != "train":
-      return A.Compose([ToTensorV2(transpose_mask=True)], additional_targets={'mask': 'mask'})
+      return A.Compose([ToTensorV2()], additional_targets={'mask': 'mask'})
     return A.Compose([
         # Spatial transformations (applied to both image and mask)
         A.ToGray(p=0.15),
@@ -73,7 +73,7 @@ def get_augmentation_pipeline(image_size: tuple, subset: str):
             p=0.2
         ),
         A.RandomGamma(gamma_limit=(80, 120), p=0.2),
-        ToTensorV2(transpose_mask=True)
+        ToTensorV2()
     ], additional_targets={'mask': 'mask'})
 
 
