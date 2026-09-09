@@ -21,7 +21,7 @@ except:
 parser = argparse.ArgumentParser()
 
 #basic usage
-parser.add_argument("-max_no_improvement", "--max_no_improvement", type=int, default=10, help="Sets the maximum number of no improvement epochs")
+parser.add_argument("-max_no_improvement", "--max_no_improvement", type=int, default=100, help="Sets the maximum number of no improvement epochs")
 parser.add_argument("-d_p", "--data_path", type=str, default=r"../datasets", help="Path to the .pth file")
 parser.add_argument("-data", "--dataset", type=str, default="segmentation", help="Name of the dataset to load")
 parser.add_argument('-source', '--source_dataset', default="all", type=str, help = "Which datasets to use for training. Input is 'all' or a list of datasets (e.g. [TNBC_2018,LyNSeC,IHC_TMA,CoNSeP])")
@@ -36,9 +36,9 @@ parser.add_argument('-target', '--target_segmentation', default="N",type=str, he
 parser.add_argument('-pixel_size', '--requested_pixel_size', default=None, type=float, help = "Requested pixel size to rescale the input images")
 
 #advanced usage
-parser.add_argument("-bs", "--batch_size", type=int, default=3)
-parser.add_argument("-e", "--num_epochs", type=int, default=500)
-parser.add_argument('-len_epoch', '--length_of_epoch', default=1000, type=int, help = "Number of samples per epoch")
+parser.add_argument("-bs", "--batch_size", type=int, default=1)
+parser.add_argument("-e", "--num_epochs", type=int, default=5000)
+parser.add_argument('-len_epoch', '--length_of_epoch', default=1, type=int, help = "Number of samples per epoch")
 parser.add_argument("-lr", "--lr", type=float, default=0.0001, help = "Learning rate")
 parser.add_argument("-m", "--model_str", type=str, default="InstanSeg_UNet", help = "Model backbone to use")
 parser.add_argument("-s", "--save", type=bool, default=True, help = "Whether to save model outputs every time a new best F1 score is achieved")
@@ -110,6 +110,8 @@ def main(model, loss_fn, train_loader, test_loader, num_epochs=1000, epoch_name=
                                                             f"epoch_outputs/{epoch_name}_" + str(epoch))))
         train_losses.append(train_loss)
         test_losses.append(test_loss)
+
+        print(F"EPOCH {epoch}/{num_epochs} | train_loss: {train_loss:.4f} | test_loss: {test_loss:.4f} | f1_score: {f1_score:.4f}")
 
         if epoch % 5 == 0 and args.optimize_hyperparameters:
             best_params = optimize_hyperparameters(model, postprocessing_fn = method.postprocessing, data_loader= test_loader, verbose = not args.on_cluster, show_progressbar = not args.on_cluster)

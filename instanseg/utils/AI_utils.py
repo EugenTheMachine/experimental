@@ -34,11 +34,8 @@ def train_epoch(train_model,
     for image_batch, labels_batch in tqdm(train_dataloader, disable=args.on_cluster):
 
         image_batch = image_batch.to(train_device)
-        print(image_batch.shape)
         labels = labels_batch.to(train_device)
-        print(labels.shape)
         output = train_model(image_batch)
-        print(output.shape)
         loss = train_loss_fn(output, labels.clone()).mean()
         train_optimizer.zero_grad()
         loss.backward()
