@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 from skimage import io
 from skimage.transform import resize
-from torchvision.tv_tensors import Image, Mask
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
@@ -176,7 +175,7 @@ class Segmentation_Dataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, i):
-        data, label = self.augmenter(Image(self.images[i]), Mask(self.labels[i]))
+        data, label = self.augmenter(self.images[i], self.labels[i])
         return data, label
 
 

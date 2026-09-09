@@ -8,6 +8,7 @@ to tensor are applied.
 
 import torch
 from torchvision.transforms import v2
+from torchvision.tv_tensors import Image, Mask
 
 
 class TorchvisionWrapper:
@@ -20,17 +21,14 @@ class TorchvisionWrapper:
     def __init__(self, transform):
         self.transform = transform
 
-    def __call__(self, *, image):
-        """
-        Applies the torchvision transform.
+    def __call__(self, image, mask=None):
+        image = Image(image)
 
-        Args:
-            image: The input image (numpy array).
+        if mask is not None:
+            mask = Mask(mask)
+            return self.transform(image, mask)
 
-        Returns:
-            A dictionary {'image': transformed_tensor}.
-        """
-        return {"image": self.transform(image)}
+        return self.transform(image)
 
 
 def get_augmentation_pipeline(subset: str):
