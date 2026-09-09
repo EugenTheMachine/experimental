@@ -21,7 +21,7 @@ except:
 parser = argparse.ArgumentParser()
 
 #basic usage
-parser.add_argument("-max_no_improvement", "--max_no_improvement", type=int, default=100, help="Sets the maximum number of no improvement epochs")
+parser.add_argument("-max_no_improvement", "--max_no_improvement", type=int, default=200, help="Sets the maximum number of no improvement epochs")
 parser.add_argument("-d_p", "--data_path", type=str, default=r"../datasets", help="Path to the .pth file")
 parser.add_argument("-data", "--dataset", type=str, default="segmentation", help="Name of the dataset to load")
 parser.add_argument('-source', '--source_dataset', default="all", type=str, help = "Which datasets to use for training. Input is 'all' or a list of datasets (e.g. [TNBC_2018,LyNSeC,IHC_TMA,CoNSeP])")
@@ -37,9 +37,9 @@ parser.add_argument('-pixel_size', '--requested_pixel_size', default=None, type=
 
 #advanced usage
 parser.add_argument("-bs", "--batch_size", type=int, default=4)
-parser.add_argument("-e", "--num_epochs", type=int, default=50000)
+parser.add_argument("-e", "--num_epochs", type=int, default=200)
 parser.add_argument('-len_epoch', '--length_of_epoch', default=1, type=int, help = "Number of samples per epoch")
-parser.add_argument("-lr", "--lr", type=float, default=0.001, help = "Learning rate")
+parser.add_argument("-lr", "--lr", type=float, default=0.003, help = "Learning rate")
 parser.add_argument("-m", "--model_str", type=str, default="InstanSeg_UNet", help = "Model backbone to use")
 parser.add_argument("-s", "--save", type=bool, default=True, help = "Whether to save model outputs every time a new best F1 score is achieved")
 parser.add_argument("-l_fn", "--loss_function", type=str, default='instanseg_loss', help = "Method to use for segmentation, only instanseg_loss is supported")
@@ -74,9 +74,9 @@ parser.add_argument('-f_e', '--feature_engineering', default="0", type=str, help
 parser.add_argument("-f","--f", default = None, type = str, help = "ignore, this is for jypyter notebook compatibility")
 parser.add_argument('-rng_seed', '--rng_seed', default=None, type=int, help = "Optional seed for the random number generator")
 parser.add_argument('-use_deterministic', '--use_deterministic', default=False, type=lambda x: (str(x).lower() == 'true'), help = "Whether to use deterministic algorithms (default=False)")
-parser.add_argument('-tile', '--tile_size', default=512, type=int, help = "Tile sizes for the input images")
+parser.add_argument('-tile', '--tile_size', default=256, type=int, help = "Tile sizes for the input images")
 
-def main(model, loss_fn, train_loader, test_loader, num_epochs=50000, epoch_name='output_epoch', max_no_improvement=50000):
+def main(model, loss_fn, train_loader, test_loader, num_epochs=200, epoch_name='output_epoch', max_no_improvement=200):
     from instanseg.utils.AI_utils import optimize_hyperparameters, train_epoch, test_epoch
     global best_f1_score, device, method, iou_threshold, args, optimizer, scheduler
 
