@@ -1,11 +1,18 @@
 import torch
-import torch
+from torch.utils.data import Dataset, DataLoader
+from typing import List, Tuple, Union
+import os
+from pathlib import Path
+from skimage import io
+from skimage.transform import resize
+from torchvision.tv_tensors import Image, Mask
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 from instanseg.utils.metrics import _robust_average_precision, _robust_f1_mean_calculator
 
-from instanseg.utils.augmentations import Augmentations
+# from instanseg.utils.augmentations import Augmentations
+from instanseg.utils.augmentations import get_augmentation_pipeline
 import time
 
 from instanseg.utils.utils import show_images
@@ -150,46 +157,69 @@ def collate_fn(data):
 
 
 # import fastremap
-class Segmentation_Dataset():
-    def __init__(self, img, label, common_transforms=True, metadata=None, size=(256, 256), augmentation_dict=None,
-                 dim_in=3, debug=False, cells_and_nuclei=False, target_segmentation="N", channel_invariant = False):
-        self.X = img
-        self.Y = label
-        self.common_transforms = common_transforms
 
-        assert len(self.X) == len(self.Y), "The number of images and labels must be the same"
-        if len(metadata) == 0:
-            self.metadata = [None] * len(self.X)
-        else:
-            self.metadata = metadata
 
-        assert len(self.X) == len(self.metadata), print("The number of images and metadata must be the same")
+class Segmentation_Dataset(Dataset):
+    def __init__(self, data_dir, subset="train", size=(256, 256)):
+        img_paths = os.listdir(data_dir / "images")
+        self.images = sorted([resize(io.imread(data_dir / "images" / f), size, order=1, mode='reflect', anti_aliasing=True) for f in img_paths])
+        label_paths = os.listdir(data_dir / "masks")
+        self.labels = sorted([resize(io.imread(data_dir / "masks" / f), size, order=0, mode='constant', anti_aliasing=False) for f in label_paths])
+        self.subset = subset
+
+        assert len(self.images) == len(self.labels), "The number of images and labels must be the same"
+
         self.size = size
-        self.Augmenter = Augmentations(augmentation_dict=augmentation_dict, debug=debug, shape=self.size,
-                                       dim_in=dim_in, cells_and_nuclei=cells_and_nuclei,
-                                       target_segmentation=target_segmentation, channel_invariant = channel_invariant)
+        self.augmenter = get_augmentation_pipeline(subset=subset)
 
     def __len__(self):
-        return len(self.X)
+        return len(self.images)
 
     def __getitem__(self, i):
+        data, label = self.augmenter(Image(self.images[i]), Mask(self.labels[i]))
+        return data, label
 
-        data = self.X[i]
-        label = self.Y[i]
-        meta = self.metadata[i]
 
-        if self.common_transforms:
-            data, label = self.Augmenter(data, label, meta)
+# class Segmentation_Dataset():
+#     def __init__(self, img, label, common_transforms=True, metadata=None, size=(256, 256), augmentation_dict=None,
+#                  dim_in=3, debug=False, cells_and_nuclei=False, target_segmentation="N", channel_invariant = False):
+#         self.X = img
+#         self.Y = label
+#         self.common_transforms = common_transforms
 
-        if len(label.shape) == 2:
-            label = label[None, :]
-        if len(data.shape) == 2:
-            data = data[None, :]
+#         assert len(self.X) == len(self.Y), "The number of images and labels must be the same"
+#         if len(metadata) == 0:
+#             self.metadata = [None] * len(self.X)
+#         else:
+#             self.metadata = metadata
 
-        assert not data.isnan().any(), "Tranformed images contains NaN"
-        assert not label.isnan().any(), "Transformed labels contains NaN"
+#         assert len(self.X) == len(self.metadata), print("The number of images and metadata must be the same")
+#         self.size = size
+#         self.Augmenter = Augmentations(augmentation_dict=augmentation_dict, debug=debug, shape=self.size,
+#                                        dim_in=dim_in, cells_and_nuclei=cells_and_nuclei,
+#                                        target_segmentation=target_segmentation, channel_invariant = channel_invariant)
 
-        return data.float(), label
+#     def __len__(self):
+#         return len(self.X)
+
+#     def __getitem__(self, i):
+
+#         data = self.X[i]
+#         label = self.Y[i]
+#         meta = self.metadata[i]
+
+#         if self.common_transforms:
+#             data, label = self.Augmenter(data, label, meta)
+
+#         if len(label.shape) == 2:
+#             label = label[None, :]
+#         if len(data.shape) == 2:
+#             data = data[None, :]
+
+#         assert not data.isnan().any(), "Tranformed images contains NaN"
+#         assert not label.isnan().any(), "Transformed labels contains NaN"
+
+#         return data.float(), label
 
 
 

@@ -6,10 +6,16 @@ import sys
 from torch import nn
 import torch
 import torch.optim as optim
+from torch.utils.data import DataLoader
 import argparse
 from pathlib import Path
 import pandas as pd
 import pdb
+
+try:
+    from utils.AI_utils import Segmentation_Dataset
+except:
+    from instanseg.utils.AI_utils import Segmentation_Dataset
 
 #torch.autograd.set_detect_anomaly(True) #For debugging cuda errors
 parser = argparse.ArgumentParser()
@@ -159,6 +165,9 @@ def main(model, loss_fn, train_loader, test_loader, num_epochs=1000, epoch_name=
 
     return model, train_losses, test_losses, f1_list, f1_list_cells
 
+
+
+
 from typing import Dict
 def instanseg_training(segmentation_dataset: Dict = None, **kwargs):
 
@@ -297,16 +306,12 @@ def instanseg_training(segmentation_dataset: Dict = None, **kwargs):
         args.source_dataset = args.source_dataset
 
 
-    train_images, train_labels, train_meta, val_images, val_labels, val_meta = _read_images_from_pth(data_path = args.data_path, 
-                                                                                                     dataset = args.dataset,
-                                                                                                       data_slice = args.data_slice, 
-                                                                                                       dummy = args.dummy, 
-                                                                                                       args = args, 
-                                                                                                       sets= ["Train","Validation"], 
-                                                                                                       complete_dataset=segmentation_dataset)
+    train_dataset = Segmentation_Dataset(data_dir=args.data_path / args.dataset, subset="train", size=(args.tile_size, args.tile_size))
+    val_dataset = Segmentation_Dataset(data_dir=args.data_path / args.dataset, subset="val", size=(args.tile_size, args.tile_size))
 
-    train_loader, test_loader = get_loaders(train_images, train_labels, val_images, val_labels, train_meta, val_meta, args)
-    
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    test_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+
     if torch.cuda.device_count() > 1:
         # print("Using", torch.cuda.device_count(), "GPUs!")
         model = nn.DataParallel(model)

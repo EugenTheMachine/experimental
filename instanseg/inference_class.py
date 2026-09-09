@@ -4,8 +4,8 @@ import torch
 from torch import nn
 from torch.nn.functional import interpolate
 from pathlib import Path, PosixPath
-from tiffslide import TiffSlide
-import zarr
+# from tiffslide import TiffSlide
+# import zarr
 import os
 from instanseg.utils.pytorch_utils import _to_tensor_float32, _to_ndim
 
@@ -51,106 +51,106 @@ class InstanSeg():
         :param image_str: The path to the image.
         :return: The image array if it can be safely read (or the path to the image if it cannot) and the pixel size in microns.
         """
-        if self.prefered_image_reader == "tiffslide":
-            from tiffslide import TiffSlide
-            slide = TiffSlide(image_str)
-            img_pixel_size = slide.properties['tiffslide.mpp-x']
-            width,height = slide.dimensions[0], slide.dimensions[1]
-            num_pixels = width * height
-            if num_pixels < self.medium_image_threshold:
-                image_array = slide.read_region((0, 0), 0, (width, height), as_array=True)
-            else:
-                return image_str, img_pixel_size
+        # if self.prefered_image_reader == "tiffslide":
+        #     from tiffslide import TiffSlide
+        #     slide = TiffSlide(image_str)
+        #     img_pixel_size = slide.properties['tiffslide.mpp-x']
+        #     width,height = slide.dimensions[0], slide.dimensions[1]
+        #     num_pixels = width * height
+        #     if num_pixels < self.medium_image_threshold:
+        #         image_array = slide.read_region((0, 0), 0, (width, height), as_array=True)
+        #     else:
+        #         return image_str, img_pixel_size
             
-        elif self.prefered_image_reader == "skimage.io":
+        if self.prefered_image_reader == "skimage.io":
             from skimage.io import imread
             image_array = imread(image_str)
             img_pixel_size = None
 
-        elif self.prefered_image_reader == "bioio":
-            from bioio import BioImage
-            slide = BioImage(image_str)
-            img_pixel_size = slide.physical_pixel_sizes.X
-            num_pixels = np.cumprod(slide.shape)[-1]
-            if num_pixels < self.medium_image_threshold:
-                image_array = slide.get_image_data().squeeze()
-            else:
-                return image_str, img_pixel_size
-        else:
-            raise NotImplementedError(f"Image reader {self.prefered_image_reader} is not implemented.")
-        
-        if img_pixel_size is None or float(img_pixel_size) < 0 or float(img_pixel_size) > 2:
-            img_pixel_size = self.read_pixel_size(image_str)
-
-        if img_pixel_size is not None:
-            import warnings
-            if float(img_pixel_size) <= 0 or float(img_pixel_size) > 2:
-                warnings.warn(f"Pixel size {img_pixel_size} microns per pixel is invalid.")
-                img_pixel_size = None
-
-        return image_array, img_pixel_size
-    
-    def read_pixel_size(self,image_str: str) -> float:
-        """
-        Read the pixel size from an image on disk.
-        :param image_str: The path to the image.
-        :return: The pixel size in microns.
-        """
-        try:
-            from tiffslide import TiffSlide
-            slide = TiffSlide(image_str)
-            img_pixel_size = slide.properties['tiffslide.mpp-x']
-            if img_pixel_size is not None and img_pixel_size > 0 and img_pixel_size < 2:
-                return img_pixel_size
-        except Exception as e:
-            print(e)
-            pass
-        from bioio import BioImage
-        try:
-            slide = BioImage(image_str)
-            img_pixel_size = slide.physical_pixel_sizes.X
-            if img_pixel_size is not None and img_pixel_size > 0 and img_pixel_size < 2:
-                return img_pixel_size
-        except Exception as e:
-            print(e)
-            pass
-        import slideio
-        try:
-            slide = slideio.open_slide(image_str, driver = "AUTO")
-            scene  = slide.get_scene(0)
-            img_pixel_size = scene.resolution[0] * 10**6
-
-            if img_pixel_size is not None and img_pixel_size > 0 and img_pixel_size < 2:
-                    
-                return img_pixel_size
-        except Exception as e:
-            print(e)
-            pass
-        print("Could not read pixel size from image metadata.")
-        
-        return None
-
-
-    def read_slide(self, image_str: str):
-        """
-        Read a whole slide image from disk.
-        :param image_str: The path to the image.
-        """
-        if self.prefered_image_reader == "tiffslide":
-            slide = TiffSlide(image_str)
-        # elif self.prefered_image_reader == "AICSImageIO":
-        #     from aicsimageio import AICSImage
-        #     slide = AICSImage(image_str)
         # elif self.prefered_image_reader == "bioio":
         #     from bioio import BioImage
         #     slide = BioImage(image_str)
-        # elif self.prefered_image_reader == "slideio":
-        #     import slideio
-        #     slide = slideio.open_slide(image_str, driver = "AUTO")
-
+        #     img_pixel_size = slide.physical_pixel_sizes.X
+        #     num_pixels = np.cumprod(slide.shape)[-1]
+        #     if num_pixels < self.medium_image_threshold:
+        #         image_array = slide.get_image_data().squeeze()
+        #     else:
+        #         return image_str, img_pixel_size
         else:
-            raise NotImplementedError(f"Image reader {self.prefered_image_reader} is not implemented for whole slide images.")
-        return slide
+            raise NotImplementedError(f"Image reader {self.prefered_image_reader} is not implemented.")
+        
+        # if img_pixel_size is None or float(img_pixel_size) < 0 or float(img_pixel_size) > 2:
+        #     img_pixel_size = self.read_pixel_size(image_str)
+
+        # if img_pixel_size is not None:
+        #     import warnings
+        #     if float(img_pixel_size) <= 0 or float(img_pixel_size) > 2:
+        #         warnings.warn(f"Pixel size {img_pixel_size} microns per pixel is invalid.")
+        #         img_pixel_size = None
+
+        return image_array, img_pixel_size
+    
+    # def read_pixel_size(self,image_str: str) -> float:
+    #     """
+    #     Read the pixel size from an image on disk.
+    #     :param image_str: The path to the image.
+    #     :return: The pixel size in microns.
+    #     """
+    #     try:
+    #         # from tiffslide import TiffSlide
+    #         slide = TiffSlide(image_str)
+    #         img_pixel_size = slide.properties['tiffslide.mpp-x']
+    #         if img_pixel_size is not None and img_pixel_size > 0 and img_pixel_size < 2:
+    #             return img_pixel_size
+    #     except Exception as e:
+    #         print(e)
+    #         pass
+    #     # from bioio import BioImage
+    #     try:
+    #         slide = BioImage(image_str)
+    #         img_pixel_size = slide.physical_pixel_sizes.X
+    #         if img_pixel_size is not None and img_pixel_size > 0 and img_pixel_size < 2:
+    #             return img_pixel_size
+    #     except Exception as e:
+    #         print(e)
+    #         pass
+    #     import slideio
+    #     try:
+    #         slide = slideio.open_slide(image_str, driver = "AUTO")
+    #         scene  = slide.get_scene(0)
+    #         img_pixel_size = scene.resolution[0] * 10**6
+
+    #         if img_pixel_size is not None and img_pixel_size > 0 and img_pixel_size < 2:
+                    
+    #             return img_pixel_size
+    #     except Exception as e:
+    #         print(e)
+    #         pass
+    #     print("Could not read pixel size from image metadata.")
+        
+    #     return None
+
+
+    # def read_slide(self, image_str: str):
+    #     """
+    #     Read a whole slide image from disk.
+    #     :param image_str: The path to the image.
+    #     """
+    #     if self.prefered_image_reader == "tiffslide":
+    #         slide = TiffSlide(image_str)
+    #     # elif self.prefered_image_reader == "AICSImageIO":
+    #     #     from aicsimageio import AICSImage
+    #     #     slide = AICSImage(image_str)
+    #     # elif self.prefered_image_reader == "bioio":
+    #     #     from bioio import BioImage
+    #     #     slide = BioImage(image_str)
+    #     # elif self.prefered_image_reader == "slideio":
+    #     #     import slideio
+    #     #     slide = slideio.open_slide(image_str, driver = "AUTO")
+
+    #     else:
+    #         raise NotImplementedError(f"Image reader {self.prefered_image_reader} is not implemented for whole slide images.")
+    #     return slide
     
     def _to_tensor(self, image: Union[np.ndarray, torch.Tensor]) -> torch.Tensor:
         return _to_tensor_float32(image)
@@ -464,216 +464,216 @@ class InstanSeg():
         else:
             return instances.cpu()
         
-    def eval_whole_slide_image(self,
-                               image: str,
-                               pixel_size: Optional[float] = None, 
-                               normalise: bool = True,
-                               normalisation_subsampling_factor: int = 10,
-                               tile_size: int = 512,
-                               overlap: int = 100,
-                               detection_size: int = 20, 
-                               batch_size: int = 1,
-                               save_geojson: bool = False,
-                               use_otsu_threshold: bool = False,
-                               **kwargs):
-            """
-            Evaluate a whole slide input image using the InstanSeg model. This function uses slideio to read an image and then segments it using the instanseg model. The segmentation is done in a tiled manner to avoid memory issues. 
+    # def eval_whole_slide_image(self,
+    #                            image: str,
+    #                            pixel_size: Optional[float] = None, 
+    #                            normalise: bool = True,
+    #                            normalisation_subsampling_factor: int = 10,
+    #                            tile_size: int = 512,
+    #                            overlap: int = 100,
+    #                            detection_size: int = 20, 
+    #                            batch_size: int = 1,
+    #                            save_geojson: bool = False,
+    #                            use_otsu_threshold: bool = False,
+    #                            **kwargs):
+    #         """
+    #         Evaluate a whole slide input image using the InstanSeg model. This function uses slideio to read an image and then segments it using the instanseg model. The segmentation is done in a tiled manner to avoid memory issues. 
             
-            :param image: The input image to be evaluated.
-            :param pixel_size: The pixel size of the image, in microns. If not provided, it will be read from the image metadata.
-            :param normalise: Controls whether the image is normalised.
-            :param tile_size: The width/height of the tiles that the image will be split into.
-            :param overlap: The overlap (in pixels) betwene tiles.
-            :param detection_size: The expected maximum size of detection objects.
-            :param batch_size: The number of tiles to be run simultaneously.
-            :param normalisation_subsampling_factor: The subsampling or downsample factor at which to calculate normalisation parameters.
-            :param use_otsu_threshold: bool = False. Whether to use an otsu threshold on the image thumbnail to find the tissue region.
-            :param kwargs: Passed to pytorch.
-            :return: Returns a zarr file with the segmentation. The zarr file is saved in the same directory as the image with the same name but with the extension .zarr.
-            """
+    #         :param image: The input image to be evaluated.
+    #         :param pixel_size: The pixel size of the image, in microns. If not provided, it will be read from the image metadata.
+    #         :param normalise: Controls whether the image is normalised.
+    #         :param tile_size: The width/height of the tiles that the image will be split into.
+    #         :param overlap: The overlap (in pixels) betwene tiles.
+    #         :param detection_size: The expected maximum size of detection objects.
+    #         :param batch_size: The number of tiles to be run simultaneously.
+    #         :param normalisation_subsampling_factor: The subsampling or downsample factor at which to calculate normalisation parameters.
+    #         :param use_otsu_threshold: bool = False. Whether to use an otsu threshold on the image thumbnail to find the tissue region.
+    #         :param kwargs: Passed to pytorch.
+    #         :return: Returns a zarr file with the segmentation. The zarr file is saved in the same directory as the image with the same name but with the extension .zarr.
+    #         """
 
-            memory_block_size = tile_size,tile_size
-            inference_tile_size = (tile_size,tile_size)
+    #         memory_block_size = tile_size,tile_size
+    #         inference_tile_size = (tile_size,tile_size)
 
-            from itertools import product
-            from instanseg.utils.pytorch_utils import torch_fastremap, match_labels
-            from pathlib import Path
-            from tqdm import tqdm
-            from instanseg.utils.tiling import _chops, _remove_edge_labels, _zarr_to_json_export
-            from instanseg.utils.utils import show_images
+    #         from itertools import product
+    #         from instanseg.utils.pytorch_utils import torch_fastremap, match_labels
+    #         from pathlib import Path
+    #         from tqdm import tqdm
+    #         from instanseg.utils.tiling import _chops, _remove_edge_labels, _zarr_to_json_export
+    #         from instanseg.utils.utils import show_images
             
-            instanseg = self.instanseg
+    #         instanseg = self.instanseg
 
-            image, img_pixel_size = self.read_image(image)
-            slide = self.read_slide(image)
+    #         image, img_pixel_size = self.read_image(image)
+    #         # slide = self.read_slide(image)
 
-            n_dim = 2 if instanseg.cells_and_nuclei else 1
-            model_pixel_size = instanseg.pixel_size
+    #         n_dim = 2 if instanseg.cells_and_nuclei else 1
+    #         model_pixel_size = instanseg.pixel_size
 
-            new_stem = Path(image).stem + self.prediction_tag
-            file_with_zarr_extension = Path(image).parent / (new_stem + ".zarr")
+    #         new_stem = Path(image).stem + self.prediction_tag
+    #         file_with_zarr_extension = Path(image).parent / (new_stem + ".zarr")
 
             
 
-            if img_pixel_size is None or img_pixel_size > 1 or img_pixel_size < 0.1:
-                import warnings
-                warnings.warn("The image pixel size {} is not in microns.".format(img_pixel_size))
-                if pixel_size is not None:
-                    img_pixel_size = pixel_size
-                else:
-                    raise ValueError("The image pixel size {} is not in microns.".format(img_pixel_size))
+    #         if img_pixel_size is None or img_pixel_size > 1 or img_pixel_size < 0.1:
+    #             import warnings
+    #             warnings.warn("The image pixel size {} is not in microns.".format(img_pixel_size))
+    #             if pixel_size is not None:
+    #                 img_pixel_size = pixel_size
+    #             else:
+    #                 raise ValueError("The image pixel size {} is not in microns.".format(img_pixel_size))
             
                 
-            scale_factor = model_pixel_size/img_pixel_size
+    #         scale_factor = model_pixel_size/img_pixel_size
 
-            dims = slide.dimensions
-            dims = (int(dims[1]/ scale_factor), int(dims[0]/scale_factor)) #The dimensions are opposite to numpy/torch/zarr dimensions.
+    #         dims = slide.dimensions
+    #         dims = (int(dims[1]/ scale_factor), int(dims[0]/scale_factor)) #The dimensions are opposite to numpy/torch/zarr dimensions.
 
-            pad2 = overlap + detection_size
-            pad = overlap
+    #         pad2 = overlap + detection_size
+    #         pad = overlap
 
-            shape = memory_block_size
-            chop_list = _chops(dims, shape, overlap=2*pad2)
+    #         shape = memory_block_size
+    #         chop_list = _chops(dims, shape, overlap=2*pad2)
 
-            if use_otsu_threshold:
-                mask,_ = _threshold_thumbnail(slide)
-                valid_positions = _find_non_empty_positions(mask, chop_list, shape[0], dims)
-            else:
-                valid_positions = np.ones((len(chop_list[0])* len(chop_list[1])))
+    #         if use_otsu_threshold:
+    #             mask,_ = _threshold_thumbnail(slide)
+    #             valid_positions = _find_non_empty_positions(mask, chop_list, shape[0], dims)
+    #         else:
+    #             valid_positions = np.ones((len(chop_list[0])* len(chop_list[1])))
 
-            chunk_shape = (n_dim,shape[0],shape[1])
-            store = zarr.DirectoryStore(file_with_zarr_extension) 
-            canvas = zarr.zeros((n_dim,dims[0],dims[1]), chunks=chunk_shape, dtype=np.int32, store=store, overwrite = True)
+    #         chunk_shape = (n_dim,shape[0],shape[1])
+    #         store = zarr.DirectoryStore(file_with_zarr_extension) 
+    #         canvas = zarr.zeros((n_dim,dims[0],dims[1]), chunks=chunk_shape, dtype=np.int32, store=store, overwrite = True)
 
-            running_max = 0
+    #         running_max = 0
 
-            total = len(chop_list[0]) * len(chop_list[1])
-            counter = -1
-            for _, ((i, window_i), (j, window_j)) in tqdm(enumerate(product(enumerate(chop_list[0]), enumerate(chop_list[1]))), total=total, colour = "green", desc = "Slide progress: "):
-                counter += 1
-                if valid_positions[counter] == 0:
-                    continue
+    #         total = len(chop_list[0]) * len(chop_list[1])
+    #         counter = -1
+    #         for _, ((i, window_i), (j, window_j)) in tqdm(enumerate(product(enumerate(chop_list[0]), enumerate(chop_list[1]))), total=total, colour = "green", desc = "Slide progress: "):
+    #             counter += 1
+    #             if valid_positions[counter] == 0:
+    #                 continue
 
-            #  input_data = scene.read_block((int(window_j*scale_factor), int(window_i*scale_factor), int(shape[0]*scale_factor), int(shape[1]*scale_factor)), size = shape)
+    #         #  input_data = scene.read_block((int(window_j*scale_factor), int(window_i*scale_factor), int(shape[0]*scale_factor), int(shape[1]*scale_factor)), size = shape)
 
-                best_level = slide.get_best_level_for_downsample(scale_factor)
-                downsample_factor = slide.level_downsamples[best_level]
+    #             best_level = slide.get_best_level_for_downsample(scale_factor)
+    #             downsample_factor = slide.level_downsamples[best_level]
 
-                initial_pixel_size = img_pixel_size
-                itermediate_pixel_size = initial_pixel_size * downsample_factor
-                final_pixel_size = model_pixel_size
+    #             initial_pixel_size = img_pixel_size
+    #             itermediate_pixel_size = initial_pixel_size * downsample_factor
+    #             final_pixel_size = model_pixel_size
 
-                intermediate_to_final = final_pixel_size/itermediate_pixel_size
+    #             intermediate_to_final = final_pixel_size/itermediate_pixel_size
 
-                if np.allclose(intermediate_to_final,1, 0.01): #if you change this value, you MUST modify the _rescale_to_pixel_size function.
-                    intermediate_to_final = 1
+    #             if np.allclose(intermediate_to_final,1, 0.01): #if you change this value, you MUST modify the _rescale_to_pixel_size function.
+    #                 intermediate_to_final = 1
                 
-                # Calculate the size of the region needed at the base level to get the desired output size
-                intermediate_shape = (int(shape[0] * intermediate_to_final), int(shape[1] * intermediate_to_final))
+    #             # Calculate the size of the region needed at the base level to get the desired output size
+    #             intermediate_shape = (int(shape[0] * intermediate_to_final), int(shape[1] * intermediate_to_final))
 
-                input_data = slide.read_region((int(window_j*scale_factor), int(window_i*scale_factor)), best_level, (int(intermediate_shape[0]) , int(intermediate_shape[1])), as_array=True)
+    #             input_data = slide.read_region((int(window_j*scale_factor), int(window_i*scale_factor)), best_level, (int(intermediate_shape[0]) , int(intermediate_shape[1])), as_array=True)
             
-                input_tensor = self._to_tensor(input_data)
+    #             input_tensor = self._to_tensor(input_data)
 
             
-                new_tile = self.eval_small_image(input_tensor,
-                                                  pixel_size = itermediate_pixel_size,
-                                                  tile_size = inference_tile_size[0],
-                                                  batch_size = batch_size,
-                                                  return_image_tensor = False,
-                                                  normalise = normalise,
-                                                  normalisation_subsampling_factor = normalisation_subsampling_factor,
-                                                    **kwargs)
+    #             new_tile = self.eval_small_image(input_tensor,
+    #                                               pixel_size = itermediate_pixel_size,
+    #                                               tile_size = inference_tile_size[0],
+    #                                               batch_size = batch_size,
+    #                                               return_image_tensor = False,
+    #                                               normalise = normalise,
+    #                                               normalisation_subsampling_factor = normalisation_subsampling_factor,
+    #                                                 **kwargs)
                                                 
 
-                if not np.allclose(intermediate_to_final,1, 0.01):
-                    from torch.nn.functional import interpolate
-                    new_tile = interpolate(new_tile, size=shape[-2:], mode="nearest").int()[0]
+    #             if not np.allclose(intermediate_to_final,1, 0.01):
+    #                 from torch.nn.functional import interpolate
+    #                 new_tile = interpolate(new_tile, size=shape[-2:], mode="nearest").int()[0]
                 
-                new_tile = _to_ndim(new_tile, 3)
+    #             new_tile = _to_ndim(new_tile, 3)
 
-                num_iter = new_tile.shape[0]
+    #             num_iter = new_tile.shape[0]
 
-                for n in range(num_iter):
+    #             for n in range(num_iter):
                     
-                    ignore_list = []
-                    if i == 0:
-                        ignore_list.append("top")
-                    if j == 0:
-                        ignore_list.append("left")
-                    if i == len(chop_list[0])-1:
-                        ignore_list.append("bottom")
-                    if j == len(chop_list[1])-1:
-                        ignore_list.append("right")
+    #                 ignore_list = []
+    #                 if i == 0:
+    #                     ignore_list.append("top")
+    #                 if j == 0:
+    #                     ignore_list.append("left")
+    #                 if i == len(chop_list[0])-1:
+    #                     ignore_list.append("bottom")
+    #                 if j == len(chop_list[1])-1:
+    #                     ignore_list.append("right")
 
-                    if i == len(chop_list[0])-1 and j == len(chop_list[1])-1:
-                        tile1 = canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]]
-                        tile2 = _remove_edge_labels(new_tile[n,pad:shape[0],pad: shape[1]], ignore = ignore_list)
+    #                 if i == len(chop_list[0])-1 and j == len(chop_list[1])-1:
+    #                     tile1 = canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]]
+    #                     tile2 = _remove_edge_labels(new_tile[n,pad:shape[0],pad: shape[1]], ignore = ignore_list)
 
-                    elif i == len(chop_list[0])-1:
-                        tile1 = canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]]
-                        tile2 = _remove_edge_labels(new_tile[n,pad:shape[0],pad : shape[1]], ignore =ignore_list)
+    #                 elif i == len(chop_list[0])-1:
+    #                     tile1 = canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]]
+    #                     tile2 = _remove_edge_labels(new_tile[n,pad:shape[0],pad : shape[1]], ignore =ignore_list)
 
-                    elif j == len(chop_list[1])-1:
-                        tile1 = canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]]
-                        tile2 = _remove_edge_labels(new_tile[n,pad:shape[0],pad: shape[1]], ignore = ignore_list)
+    #                 elif j == len(chop_list[1])-1:
+    #                     tile1 = canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]]
+    #                     tile2 = _remove_edge_labels(new_tile[n,pad:shape[0],pad: shape[1]], ignore = ignore_list)
 
-                    elif i == 0 and j == 0:
-                        tile1 = canvas[n, window_i  :window_i + shape[0], window_j :window_j + shape[1]]
-                        tile2 = _remove_edge_labels(new_tile[n, :shape[0], : shape[1]], ignore = ignore_list)
-                    elif i == 0:
-                        tile1 = canvas[n, window_i  :window_i + shape[0], window_j + pad :window_j + shape[1]]
-                        tile2 = _remove_edge_labels(new_tile[n, :shape[0],pad : shape[1]], ignore = ignore_list)
+    #                 elif i == 0 and j == 0:
+    #                     tile1 = canvas[n, window_i  :window_i + shape[0], window_j :window_j + shape[1]]
+    #                     tile2 = _remove_edge_labels(new_tile[n, :shape[0], : shape[1]], ignore = ignore_list)
+    #                 elif i == 0:
+    #                     tile1 = canvas[n, window_i  :window_i + shape[0], window_j + pad :window_j + shape[1]]
+    #                     tile2 = _remove_edge_labels(new_tile[n, :shape[0],pad : shape[1]], ignore = ignore_list)
 
-                    elif j == 0:
-                        tile1 = canvas[n, window_i  + pad:window_i + shape[0], window_j:window_j + shape[1]]
-                        tile2 = _remove_edge_labels(new_tile[n,pad :shape[0],: shape[1]], ignore = ignore_list)
+    #                 elif j == 0:
+    #                     tile1 = canvas[n, window_i  + pad:window_i + shape[0], window_j:window_j + shape[1]]
+    #                     tile2 = _remove_edge_labels(new_tile[n,pad :shape[0],: shape[1]], ignore = ignore_list)
 
-                    if j == 0 or i == 0 or j == len(chop_list[1])-1 or i == len(chop_list[0])-1:
+    #                 if j == 0 or i == 0 or j == len(chop_list[1])-1 or i == len(chop_list[0])-1:
 
-                        tile2 = torch_fastremap(tile2)
-                        tile2[tile2>0] = tile2[tile2>0] + running_max
+    #                     tile2 = torch_fastremap(tile2)
+    #                     tile2[tile2>0] = tile2[tile2>0] + running_max
 
-                        tile1_torch = torch.tensor(np.array(tile1), dtype = torch.int32)
+    #                     tile1_torch = torch.tensor(np.array(tile1), dtype = torch.int32)
 
-                        remapped = match_labels(tile1_torch, tile2, threshold = 0.1)[1]
-                        tile1_torch[remapped>0] = remapped[remapped>0].int()
+    #                     remapped = match_labels(tile1_torch, tile2, threshold = 0.1)[1]
+    #                     tile1_torch[remapped>0] = remapped[remapped>0].int()
 
-                        running_max = max(running_max, tile1_torch.max())
+    #                     running_max = max(running_max, tile1_torch.max())
 
-                        if i == len(chop_list[0])-1 and j == len(chop_list[1])-1:
-                            canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
-                        elif i == len(chop_list[0])-1:
-                            canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
-                        elif j == len(chop_list[1])-1:
-                            canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
-                        elif i == 0 and j == 0:
-                            canvas[n, window_i  :window_i + shape[0], window_j :window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
-                        elif i == 0:
-                            canvas[n, window_i  :window_i + shape[0], window_j + pad :window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
-                        elif j == 0:
-                            canvas[n, window_i  + pad:window_i + shape[0], window_j:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
+    #                     if i == len(chop_list[0])-1 and j == len(chop_list[1])-1:
+    #                         canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
+    #                     elif i == len(chop_list[0])-1:
+    #                         canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
+    #                     elif j == len(chop_list[1])-1:
+    #                         canvas[n, window_i + pad:window_i + shape[0], window_j + pad:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
+    #                     elif i == 0 and j == 0:
+    #                         canvas[n, window_i  :window_i + shape[0], window_j :window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
+    #                     elif i == 0:
+    #                         canvas[n, window_i  :window_i + shape[0], window_j + pad :window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
+    #                     elif j == 0:
+    #                         canvas[n, window_i  + pad:window_i + shape[0], window_j:window_j + shape[1]] = tile1_torch.numpy().astype(np.int32)
 
-                    else:
+    #                 else:
                         
-                        tile1 = canvas[n, window_i + pad:window_i + shape[0] - pad, window_j + pad:window_j + shape[1] - pad]
-                        tile2 = _remove_edge_labels(new_tile[n,pad:shape[0] -pad,pad: shape[1]-pad])
+    #                     tile1 = canvas[n, window_i + pad:window_i + shape[0] - pad, window_j + pad:window_j + shape[1] - pad]
+    #                     tile2 = _remove_edge_labels(new_tile[n,pad:shape[0] -pad,pad: shape[1]-pad])
                         
-                        tile2 = torch_fastremap(tile2)
+    #                     tile2 = torch_fastremap(tile2)
 
-                        tile2[tile2>0] = tile2[tile2>0] + running_max
+    #                     tile2[tile2>0] = tile2[tile2>0] + running_max
 
-                        tile1_torch = torch.tensor(np.array(tile1), dtype = torch.int32)
-                        remapped = match_labels(tile1_torch, tile2, threshold = 0.1)[1]
+    #                     tile1_torch = torch.tensor(np.array(tile1), dtype = torch.int32)
+    #                     remapped = match_labels(tile1_torch, tile2, threshold = 0.1)[1]
 
-                        tile1_torch[remapped>0] = remapped[remapped>0].int()
-                        running_max = max(running_max, tile1_torch.max())
+    #                     tile1_torch[remapped>0] = remapped[remapped>0].int()
+    #                     running_max = max(running_max, tile1_torch.max())
                     
-                        canvas[n, window_i + pad:window_i + shape[0] - pad, window_j + pad:window_j + shape[1] - pad] = tile1_torch.numpy().astype(np.int32)
+    #                     canvas[n, window_i + pad:window_i + shape[0] - pad, window_j + pad:window_j + shape[1] - pad] = tile1_torch.numpy().astype(np.int32)
 
-            if save_geojson:
-                print("Exporting to geojson")
-                _zarr_to_json_export(file_with_zarr_extension, detection_size = detection_size, size = shape[0], scale = scale_factor, n_dim = n_dim)
+    #         if save_geojson:
+    #             print("Exporting to geojson")
+    #             _zarr_to_json_export(file_with_zarr_extension, detection_size = detection_size, size = shape[0], scale = scale_factor, n_dim = n_dim)
                     
     
     def display(self,
