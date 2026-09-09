@@ -169,14 +169,15 @@ class Segmentation_Dataset(Dataset):
         assert len(self.images) == len(self.labels), "The number of images and labels must be the same"
 
         self.size = size
-        self.augmenter = get_augmentation_pipeline(subset=subset)
+        self.augmenter = get_augmentation_pipeline(image_size=size, subset=subset)
 
     def __len__(self):
         return len(self.images)
 
     def __getitem__(self, i):
-        data, label = self.augmenter(self.images[i], self.labels[i])
-        return data, label
+        augmented = self.augmenter(image=self.images[i], mask=self.labels[i])
+        data, label = augmented['image'], augmented['mask']
+        return data / 255.0, label
 
 
 # class Segmentation_Dataset():

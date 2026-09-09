@@ -306,7 +306,7 @@ def instanseg_training(segmentation_dataset: Dict = None, **kwargs):
         args.source_dataset = args.source_dataset
 
 
-    train_dataset = Segmentation_Dataset(data_dir=args.data_path / "train", subset="train", size=(args.tile_size, args.tile_size))
+    train_dataset = Segmentation_Dataset(data_dir=args.data_path / "train", subset="val", size=(args.tile_size, args.tile_size))
     val_dataset = Segmentation_Dataset(data_dir=args.data_path / "val", subset="val", size=(args.tile_size, args.tile_size))
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
