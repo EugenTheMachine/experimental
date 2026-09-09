@@ -111,7 +111,7 @@ def main(model, loss_fn, train_loader, test_loader, num_epochs=1000, epoch_name=
         train_losses.append(train_loss)
         test_losses.append(test_loss)
 
-        print(F"EPOCH {epoch}/{num_epochs} | train_loss: {train_loss:.4f} | test_loss: {test_loss:.4f} | f1_score: {f1_score:.4f}")
+        print(F"EPOCH {epoch}/{num_epochs} | train_loss: {train_loss} | test_loss: {test_loss} | f1_score: {f1_score}")
 
         if epoch % 5 == 0 and args.optimize_hyperparameters:
             best_params = optimize_hyperparameters(model, postprocessing_fn = method.postprocessing, data_loader= test_loader, verbose = not args.on_cluster, show_progressbar = not args.on_cluster)
