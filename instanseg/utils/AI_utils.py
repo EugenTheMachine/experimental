@@ -180,7 +180,7 @@ class Segmentation_Dataset(Dataset):
     def __getitem__(self, i):
         augmented = self.augmenter(image=self.images[i], mask=self.labels[i])
         data, label = augmented['image'], augmented['mask']
-        return data.to(torch.float32) / 255.0, label.to(torch.int64)
+        return data.to(torch.float32) / 255.0, label.unsqueeze(0).to(torch.int64)
 
 
 # class Segmentation_Dataset():
