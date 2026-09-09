@@ -32,7 +32,7 @@ def train_epoch(train_model,
     start = time.time()
     train_model.train()
     train_loss = []
-    for image_batch, labels_batch, _ in tqdm(train_dataloader, disable=args.on_cluster):
+    for image_batch, labels_batch in tqdm(train_dataloader, disable=args.on_cluster):
 
         image_batch = image_batch.to(train_device)
         labels = labels_batch.to(train_device)
@@ -72,7 +72,7 @@ def test_epoch(test_model,
 
     current_f1_list = []
     with torch.no_grad():
-        for image_batch, labels_batch, _ in tqdm(test_dataloader, disable=args.on_cluster):
+        for image_batch, labels_batch in tqdm(test_dataloader, disable=args.on_cluster):
             image_batch = image_batch.to(test_device)
             labels = labels_batch.to(test_device) 
             output = test_model(image_batch)  
@@ -288,7 +288,7 @@ def optimize_hyperparameters(model,postprocessing_fn, data_loader = None, val_im
 
     with torch.no_grad():
         if data_loader is not None:
-            for image_batch, labels_batch, _ in data_loader:
+            for image_batch, labels_batch in data_loader:
                     image_batch = image_batch.to(device)
                     output = _model(image_batch).cpu()
                     predictions.extend([pred,masks] for pred,masks in zip(output,labels_batch))

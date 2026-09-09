@@ -63,8 +63,8 @@ def run_and_monitor(poll_interval=60, timeout=1800, push=False):
 
     if push:
         ensure_dataset_source()
-        print(f"Triggering execution of kernel '{KERNEL_ID}' on P100 GPU...", flush=True)
-        push_cmd = ["kaggle", "kernels", "push", "-p", ".", "--accelerator", "NvidiaTeslaP100"]
+        print(f"Triggering execution of kernel '{KERNEL_ID}' on T4 GPU...", flush=True)
+        push_cmd = ["kaggle", "kernels", "push", "-p", ".", "--accelerator", "NvidiaTeslaT4"]
         res = subprocess.run(push_cmd, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
         if res.returncode != 0:
             print(f"Failed to start kernel execution:\n{res.stderr}", file=sys.stderr, flush=True)
