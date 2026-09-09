@@ -39,7 +39,7 @@ parser.add_argument('-pixel_size', '--requested_pixel_size', default=None, type=
 parser.add_argument("-bs", "--batch_size", type=int, default=4)
 parser.add_argument("-e", "--num_epochs", type=int, default=200)
 parser.add_argument('-len_epoch', '--length_of_epoch', default=1, type=int, help = "Number of samples per epoch")
-parser.add_argument("-lr", "--lr", type=float, default=0.0003, help = "Learning rate")
+parser.add_argument("-lr", "--lr", type=float, default=0.01, help = "Learning rate")
 parser.add_argument("-m", "--model_str", type=str, default="InstanSeg_UNet", help = "Model backbone to use")
 parser.add_argument("-s", "--save", type=bool, default=True, help = "Whether to save model outputs every time a new best F1 score is achieved")
 parser.add_argument("-l_fn", "--loss_function", type=str, default='instanseg_loss', help = "Method to use for segmentation, only instanseg_loss is supported")
