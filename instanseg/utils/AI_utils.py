@@ -179,7 +179,7 @@ class Segmentation_Dataset(Dataset):
         data, label = augmented['image'], augmented['mask']
         data = data.to(torch.float32) / 255.0
         label = label.unsqueeze(0).to(torch.int64)
-        if i == 1:
+        if i == 0:
             print(f"Data - shape: {data.shape}, min: {data.min()}, max: {data.max()}, dtype: {data.dtype}, some unique values: {torch.unique(data)[:5]}")
             print(f"Label - shape: {label.shape}, min: {label.min()}, max: {label.max()}, dtype: {label.dtype}, some unique values: {torch.unique(label)[:5]}")
             import matplotlib.pyplot as plt
