@@ -177,7 +177,7 @@ class Segmentation_Dataset(Dataset):
     def __getitem__(self, i):
         augmented = self.augmenter(image=self.images[i], mask=self.labels[i])
         data, label = augmented['image'], augmented['mask']
-        data = data.to(torch.float32) / 255.0
+        data = data.to(torch.float32)
         label = label.unsqueeze(0).to(torch.int64)
         if i == 0:
             print(f"Data - shape: {data.shape}, min: {data.min()}, max: {data.max()}, dtype: {data.dtype}, some unique values: {torch.unique(data)[:5]}")
