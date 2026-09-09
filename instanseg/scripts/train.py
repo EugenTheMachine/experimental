@@ -172,7 +172,7 @@ from typing import Dict
 def instanseg_training(segmentation_dataset: Dict = None, **kwargs):
 
     global device, method, iou_threshold, args, optimizer, scheduler
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     for key, value in kwargs.items():
         if hasattr(args, key):
