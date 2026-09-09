@@ -32,7 +32,7 @@ parser.add_argument("-e_s", "--experiment_str", type=str, default="my_first_inst
 parser.add_argument("-d", "--device", type=str, default=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"))
 parser.add_argument('-num_workers', '--num_workers', default=4, type=int, help = "Number of CPU cores to use for data loading")
 parser.add_argument('-ci', '--channel_invariant', default=False, type=lambda x: (str(x).lower() == 'true'), help = "Whether to add a channel invariant model to the pipeline")
-parser.add_argument('-target', '--target_segmentation', default="N",type=str, help = " Cells or nuclei or both? Accepts: C,N, NC")  
+parser.add_argument('-target', '--target_segmentation', default="C",type=str, help = " Cells or nuclei or both? Accepts: C,N, NC")  
 parser.add_argument('-pixel_size', '--requested_pixel_size', default=None, type=float, help = "Requested pixel size to rescale the input images")
 
 #advanced usage
