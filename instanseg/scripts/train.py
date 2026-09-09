@@ -36,8 +36,8 @@ parser.add_argument('-target', '--target_segmentation', default="N",type=str, he
 parser.add_argument('-pixel_size', '--requested_pixel_size', default=None, type=float, help = "Requested pixel size to rescale the input images")
 
 #advanced usage
-parser.add_argument("-bs", "--batch_size", type=int, default=1)
-parser.add_argument("-e", "--num_epochs", type=int, default=5000)
+parser.add_argument("-bs", "--batch_size", type=int, default=4)
+parser.add_argument("-e", "--num_epochs", type=int, default=50000)
 parser.add_argument('-len_epoch', '--length_of_epoch', default=1, type=int, help = "Number of samples per epoch")
 parser.add_argument("-lr", "--lr", type=float, default=0.001, help = "Learning rate")
 parser.add_argument("-m", "--model_str", type=str, default="InstanSeg_UNet", help = "Model backbone to use")
@@ -74,9 +74,9 @@ parser.add_argument('-f_e', '--feature_engineering', default="0", type=str, help
 parser.add_argument("-f","--f", default = None, type = str, help = "ignore, this is for jypyter notebook compatibility")
 parser.add_argument('-rng_seed', '--rng_seed', default=None, type=int, help = "Optional seed for the random number generator")
 parser.add_argument('-use_deterministic', '--use_deterministic', default=False, type=lambda x: (str(x).lower() == 'true'), help = "Whether to use deterministic algorithms (default=False)")
-parser.add_argument('-tile', '--tile_size', default=256, type=int, help = "Tile sizes for the input images")
+parser.add_argument('-tile', '--tile_size', default=512, type=int, help = "Tile sizes for the input images")
 
-def main(model, loss_fn, train_loader, test_loader, num_epochs=1000, epoch_name='output_epoch', max_no_improvement=100):
+def main(model, loss_fn, train_loader, test_loader, num_epochs=50000, epoch_name='output_epoch', max_no_improvement=50000):
     from instanseg.utils.AI_utils import optimize_hyperparameters, train_epoch, test_epoch
     global best_f1_score, device, method, iou_threshold, args, optimizer, scheduler
 
