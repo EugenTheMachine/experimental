@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 KERNEL_ID = "eugenfromkharkov/instanseg-experimental-training"
-DATASET_SOURCE = "eugenfromkharkov/overfit-dataset"
+DATASET_SOURCE = "eugenfromkharkov/livecell-cellseg-1"
 
 def load_token(token_path="kaggle_token.txt") -> str:
     path = Path(token_path)

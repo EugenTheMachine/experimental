@@ -21,7 +21,7 @@ except:
 parser = argparse.ArgumentParser()
 
 #basic usage
-parser.add_argument("-max_no_improvement", "--max_no_improvement", type=int, default=200, help="Sets the maximum number of no improvement epochs")
+parser.add_argument("-max_no_improvement", "--max_no_improvement", type=int, default=5, help="Sets the maximum number of no improvement epochs")
 parser.add_argument("-d_p", "--data_path", type=str, default=r"../datasets", help="Path to the .pth file")
 parser.add_argument("-data", "--dataset", type=str, default="segmentation", help="Name of the dataset to load")
 parser.add_argument('-source', '--source_dataset', default="all", type=str, help = "Which datasets to use for training. Input is 'all' or a list of datasets (e.g. [TNBC_2018,LyNSeC,IHC_TMA,CoNSeP])")
@@ -36,7 +36,7 @@ parser.add_argument('-target', '--target_segmentation', default="C",type=str, he
 parser.add_argument('-pixel_size', '--requested_pixel_size', default=None, type=float, help = "Requested pixel size to rescale the input images")
 
 #advanced usage
-parser.add_argument("-bs", "--batch_size", type=int, default=4)
+parser.add_argument("-bs", "--batch_size", type=int, default=2)
 parser.add_argument("-e", "--num_epochs", type=int, default=200)
 parser.add_argument('-len_epoch', '--length_of_epoch', default=1, type=int, help = "Number of samples per epoch")
 parser.add_argument("-lr", "--lr", type=float, default=0.01, help = "Learning rate")
@@ -308,7 +308,7 @@ def instanseg_training(segmentation_dataset: Dict = None, **kwargs):
         args.source_dataset = args.source_dataset
 
 
-    train_dataset = Segmentation_Dataset(data_dir=args.data_path / "train", subset="val", size=(args.tile_size, args.tile_size))
+    train_dataset = Segmentation_Dataset(data_dir=args.data_path / "train", subset="train", size=(args.tile_size, args.tile_size))
     val_dataset = Segmentation_Dataset(data_dir=args.data_path / "val", subset="val", size=(args.tile_size, args.tile_size))
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
