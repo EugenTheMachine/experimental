@@ -179,7 +179,6 @@ class Segmentation_Dataset(Dataset):
         return len(self.img_files)
 
     def __getitem__(self, i):
-        import numpy as np
         img = io.imread(self.img_files[i])
         mask = io.imread(self.mask_files[i])
 
@@ -199,24 +198,19 @@ class Segmentation_Dataset(Dataset):
         else:
             img_uint8 = np.zeros_like(img, dtype=np.uint8)
 
-        # Remember original mask max so we can recover integer labels after uint8 round-trip.
-        mask_max = float(mask.max()) if mask.max() > 0 else 1.0
-        # Clamp mask to uint8 if it fits, otherwise scale temporarily (restored below).
-        if mask_max <= 255:
-            mask_uint8 = mask.astype(np.uint8)
-            mask_scale = 1.0
-        else:
-            mask_uint8 = (mask / mask_max * 255).astype(np.uint8)
-            mask_scale = mask_max / 255.0
+        # Keep mask as int32 — instance IDs can exceed 255 (LIVECell has 200-500+ cells).
+        # Albumentations only applies spatial/geometric transforms to masks, so dtype doesn't need to be uint8.
+        mask_int32 = mask.astype(np.int32)
 
-        augmented = self.augmenter(image=img_uint8, mask=mask_uint8)
+        augmented = self.augmenter(image=img_uint8, mask=mask_int32)
         data, label = augmented['image'], augmented['mask']
 
-        # ToTensorV2 yields (C,H,W) uint8; convert image to float32 in [0,1].
+        # ToTensorV2 yields (C,H,W) uint8 for image; cast to float32 in [0,1].
         data = data.to(torch.float32) / 255.0
-        # Restore original integer instance labels.
-        label = (label.float() * mask_scale).long().unsqueeze(0)
+        # Mask instance IDs are preserved exactly as int32; cast to int64 (torch.long).
+        label = label.long().unsqueeze(0)
         return data, label
+
 
 
 # class Segmentation_Dataset():
