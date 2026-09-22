@@ -160,22 +160,32 @@ def collate_fn(data):
 
 class Segmentation_Dataset(Dataset):
     def __init__(self, data_dir, subset="train", size=(256, 256)):
-        img_paths = os.listdir(data_dir / "images")
-        self.images = sorted([resize(io.imread(data_dir / "images" / f), size, order=1, mode='reflect', anti_aliasing=True) for f in img_paths])
-        label_paths = os.listdir(data_dir / "masks")
-        self.labels = sorted([resize(io.imread(data_dir / "masks" / f), size, order=0, mode='constant', anti_aliasing=False) for f in label_paths])
+        data_dir = Path(data_dir)
+        img_dir = data_dir / "images"
+        mask_dir = data_dir / "masks"
+
+        img_paths = sorted([f for f in os.listdir(img_dir) if not f.startswith('.')])
+        mask_paths = sorted([f for f in os.listdir(mask_dir) if not f.startswith('.')])
+
+        assert len(img_paths) == len(mask_paths), f"The number of images ({len(img_paths)}) and labels ({len(mask_paths)}) must be the same in {data_dir}"
+
+        self.img_files = [img_dir / f for f in img_paths]
+        self.mask_files = [mask_dir / f for f in mask_paths]
         self.subset = subset
-
-        assert len(self.images) == len(self.labels), "The number of images and labels must be the same"
-
         self.size = size
         self.augmenter = get_augmentation_pipeline(image_size=size, subset=subset)
 
     def __len__(self):
-        return len(self.images)
+        return len(self.img_files)
 
     def __getitem__(self, i):
-        augmented = self.augmenter(image=self.images[i], mask=self.labels[i])
+        img = io.imread(self.img_files[i])
+        mask = io.imread(self.mask_files[i])
+
+        img = resize(img, self.size, order=1, mode='reflect', anti_aliasing=True)
+        mask = resize(mask, self.size, order=0, mode='constant', anti_aliasing=False)
+
+        augmented = self.augmenter(image=img, mask=mask)
         data, label = augmented['image'], augmented['mask']
         data = data.to(torch.float32)
         label = label.unsqueeze(0).to(torch.int64)

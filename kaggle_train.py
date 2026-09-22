@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 
 KERNEL_ID = "eugenfromkharkov/instanseg-experimental-training"
-DATASET_SOURCE = "eugenfromkharkov/livecell-cellseg-1"
+DATASET_SOURCE = "eugenfromkharkov/livecell-cellseg1"
 
 def load_token(token_path="kaggle_token.txt") -> str:
     path = Path(token_path)
@@ -20,7 +20,7 @@ def load_token(token_path="kaggle_token.txt") -> str:
     return token
 
 def get_kernel_status(env: dict) -> str:
-    cmd = ["kaggle", "kernels", "status", KERNEL_ID]
+    cmd = [sys.executable, "-m", "kaggle", "kernels", "status", KERNEL_ID]
     res = subprocess.run(cmd, env=env, capture_output=True, text=True)
     if res.returncode != 0:
         print(f"Error checking kernel status:\n{res.stderr}", file=sys.stderr)
@@ -41,7 +41,7 @@ def ensure_dataset_source(metadata_path="kernel-metadata.json") -> None:
 
 def fetch_and_display_logs(env: dict):
     print("\nFetching latest execution logs...", flush=True)
-    cmd = ["kaggle", "kernels", "logs", KERNEL_ID]
+    cmd = [sys.executable, "-m", "kaggle", "kernels", "logs", KERNEL_ID]
     res = subprocess.run(cmd, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if res.returncode == 0 and res.stdout:
         lines = res.stdout.splitlines()
@@ -64,7 +64,7 @@ def run_and_monitor(poll_interval=60, timeout=1800, push=False):
     if push:
         ensure_dataset_source()
         print(f"Triggering execution of kernel '{KERNEL_ID}' on T4 GPU...", flush=True)
-        push_cmd = ["kaggle", "kernels", "push", "-p", ".", "--accelerator", "NvidiaTeslaT4"]
+        push_cmd = [sys.executable, "-m", "kaggle", "kernels", "push", "-p", ".", "--accelerator", "NvidiaTeslaT4"]
         res = subprocess.run(push_cmd, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
         if res.returncode != 0:
             print(f"Failed to start kernel execution:\n{res.stderr}", file=sys.stderr, flush=True)
