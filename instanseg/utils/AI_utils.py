@@ -179,6 +179,7 @@ class Segmentation_Dataset(Dataset):
         return len(self.img_files)
 
     def __getitem__(self, i):
+        import numpy as np
         img = io.imread(self.img_files[i])
         mask = io.imread(self.mask_files[i])
 
@@ -190,10 +191,31 @@ class Segmentation_Dataset(Dataset):
         img = resize(img, self.size, order=1, mode='reflect', anti_aliasing=True)
         mask = resize(mask, self.size, order=0, mode='constant', anti_aliasing=False, preserve_range=True)
 
-        augmented = self.augmenter(image=img, mask=mask)
+        # Convert image to uint8 so OpenCV-based augmentations (e.g. MedianBlur) work.
+        # resize() returns float64 in [0,1]; scale to [0,255] uint8.
+        img_min, img_max = float(img.min()), float(img.max())
+        if img_max > img_min:
+            img_uint8 = ((img - img_min) / (img_max - img_min) * 255).astype(np.uint8)
+        else:
+            img_uint8 = np.zeros_like(img, dtype=np.uint8)
+
+        # Remember original mask max so we can recover integer labels after uint8 round-trip.
+        mask_max = float(mask.max()) if mask.max() > 0 else 1.0
+        # Clamp mask to uint8 if it fits, otherwise scale temporarily (restored below).
+        if mask_max <= 255:
+            mask_uint8 = mask.astype(np.uint8)
+            mask_scale = 1.0
+        else:
+            mask_uint8 = (mask / mask_max * 255).astype(np.uint8)
+            mask_scale = mask_max / 255.0
+
+        augmented = self.augmenter(image=img_uint8, mask=mask_uint8)
         data, label = augmented['image'], augmented['mask']
-        data = data.to(torch.float32)
-        label = label.unsqueeze(0).to(torch.int64)
+
+        # ToTensorV2 yields (C,H,W) uint8; convert image to float32 in [0,1].
+        data = data.to(torch.float32) / 255.0
+        # Restore original integer instance labels.
+        label = (label.float() * mask_scale).long().unsqueeze(0)
         return data, label
 
 
