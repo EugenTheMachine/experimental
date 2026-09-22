@@ -6,9 +6,8 @@ def get_augmentation_pipeline(image_size: tuple, subset: str):
       return A.Compose([ToTensorV2()], additional_targets={'mask': 'mask'})
     return A.Compose([
         # Spatial transformations (applied to both image and mask)
-        A.ToGray(p=0.15),
         A.RandomSizedCrop(
-            min_max_height=(image_size[0]//1.5, image_size[0]),
+            min_max_height=(int(image_size[0] // 1.5), int(image_size[0])),
             size = image_size,
             w2h_ratio = 1,
             p=1.0
@@ -28,10 +27,9 @@ def get_augmentation_pipeline(image_size: tuple, subset: str):
             p=0.15
         ),
 
-        # # Pixel-level transformations (image only)
+        # Pixel-level transformations (image only)
         A.OneOf([
             A.GaussNoise(),  # Gaussian noise
-            A.ISONoise(),  # Camera sensor noise
             A.MultiplicativeNoise(),  # Multiplicative noise
         ], p=0.15),
 
@@ -45,20 +43,6 @@ def get_augmentation_pipeline(image_size: tuple, subset: str):
             brightness_limit=(-0.2, 0.3),
             contrast_limit=(-0.2, 0.3),
             p=0.4
-        ),
-        A.HueSaturationValue(
-            hue_shift_limit=20,
-            sat_shift_limit=30,
-            val_shift_limit=20,
-            p=0.25
-        ),
-        A.CLAHE(p=0.2),
-        A.ChannelShuffle(p=0.1),
-        A.RGBShift(
-            r_shift_limit=20,
-            g_shift_limit=20,
-            b_shift_limit=20,
-            p=0.3
         ),
         A.Downscale(p=0.2),
         A.PixelDropout(

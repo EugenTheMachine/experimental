@@ -182,8 +182,13 @@ class Segmentation_Dataset(Dataset):
         img = io.imread(self.img_files[i])
         mask = io.imread(self.mask_files[i])
 
+        if img.ndim == 3:
+            img = img[..., 0]
+        if mask.ndim == 3:
+            mask = mask[..., 0]
+
         img = resize(img, self.size, order=1, mode='reflect', anti_aliasing=True)
-        mask = resize(mask, self.size, order=0, mode='constant', anti_aliasing=False)
+        mask = resize(mask, self.size, order=0, mode='constant', anti_aliasing=False, preserve_range=True)
 
         augmented = self.augmenter(image=img, mask=mask)
         data, label = augmented['image'], augmented['mask']
